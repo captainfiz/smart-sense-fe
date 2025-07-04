@@ -1,53 +1,51 @@
-# 🧠 SmartSense – Python Conversational Analytics Assistant
+# 🧠 SmartSense – Conversational Analytics Assistant
 
-SmartSense is a Python-based insight engine that lets you explore marketing and campaign data using natural language. It converts plain English queries into dynamic KPIs, visualizations, and summaries—on the fly.
+SmartSense is a real-time, natural language-driven insight engine that enables marketing and business teams to generate instant dashboards and KPIs—without any technical know-how. Ask questions like "Show leads by region last quarter" and watch insights come to life.
 
 ---
 
 ## 🚀 Features
 
 ### 🔍 Natural Language Querying
-- Accepts prompts like:  
-  “Show me leads by region for June”  
-  “Now compare it with Q1”
+- Understands user queries like:  
+  “Show me campaign performance for June”  
+  “Now drill down by region”
 
-### 🧠 Intent Parsing & Prompt Understanding
-- Extracts:
-  - Metrics (sales, leads, etc.)
-  - Dimensions (region, campaign, source)
-  - Timeframes (last month, Q2)
-  - Filters (country = India)
+### 🧠 Intent Detection
+- Parses:
+  - Metrics: sales, leads, conversion rate, etc.
+  - Dimensions: campaign, channel, region
+  - Filters & Timeframes: “last month”, “Q1 2025”
 
 ### 📊 Dynamic Visualizations
 - Auto-generates:
-  - Bar, Line, and Pie charts
-  - KPI cards
-- Uses libraries like `Plotly`, `Matplotlib`, or `Altair`
+  - Bar, Line, Pie Charts
+  - KPIs and summaries
+- Chooses the best chart based on your data context
 
-### 🗂 Dataset Query Engine
-- Reads CSV or connects to SQL/NoSQL sources
-- Easily extendable for new data schemas
+### 🗂 Dataset Integration
+- Works with CSVs and campaign databases
+- Extensible to future data schemas
 
-### 💬 Multi-turn Context Memory
-- Maintains conversation flow with tools like:
-  - LangGraph
-  - LangChain Memory
-  - Custom RAG pipelines
+### 💬 Contextual Conversation
+- Maintains multi-turn context:  
+  “Now compare it with last quarter”  
+  “Split by paid vs organic”
 
 ---
 
-## ✨ Optional Add-ons
-
-- 🔺 Anomaly Detection (via `scikit-learn`, `statsmodels`)
-- 🎙️ Voice Command Support (Whisper/OpenAI API)
-- 📤 PDF/PNG Export with `WeasyPrint` or `pdfkit`
-- 💾 Saved Query Templates
+## ✨ Bonus Features (Optional)
+- 🔺 Anomaly detection for sudden spikes/drops
+- 🎙️ Voice input via Whisper API (voice-to-text)
+- 📤 Export dashboards to PDF, PNG, or links
+- 💾 Saved templates for common queries
 
 ---
 
 ## 📦 Getting Started
 
-### 1. Clone the Repo
 ```bash
 git clone https://github.com/your-username/smartsense.git
 cd smartsense
+npm install
+npm run dev
