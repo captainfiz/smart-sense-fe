@@ -11,10 +11,7 @@ import useAuthRedirect from "@/hooks/useAuthRedirect";
 
 export default function ChatScreen() {
   useAuthRedirect();
-  const [messages, setMessages] = useState([
-    { role: "gpt", text: "Hello! How can I help you today?" },
-    { role: "user", text: "Tell me a joke!" },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [showFilePopup, setShowFilePopup] = useState(false);
   const [selectedFile, setSelectedFile] = useState([]);
@@ -46,10 +43,42 @@ export default function ChatScreen() {
     fileInputRef.current.click();
   };
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { role: "user", text: input }]);
-    setInput("");
+const handleSend = () => {
+  if (!input.trim()) return;
+
+  const userMessage = { role: "user", text: input };
+  const placeholderMessage = { role: "gpt", text: "..." };
+
+  setMessages((prev) => [...prev, userMessage, placeholderMessage]);
+  sendMessage(input);
+  setInput("");
+};
+
+
+  const sendMessage = async (inputText) => {
+    try {
+      const res = await axiosInstance.post("/protected/chat", {
+        input: inputText,
+      });
+
+      const result = res.data.result || [];
+
+      // Filter AI responses (could also include user messages echoed back)
+      const aiResponses = result.filter((r) => r.type === "ai");
+
+      if (aiResponses.length > 0) {
+        const aiMessage = {
+          role: "gpt",
+          text: aiResponses.map((msg) => msg.content).join("\n\n"),
+        };
+        setMessages((prev) => {
+          const withoutLast = prev.slice(0, -1); // remove last placeholder
+          return [...withoutLast, aiMessage];
+        });
+      }
+    } catch (error) {
+      console.log("Error sending message:", error);
+    }
   };
 
   const handleLogout = () => {
@@ -71,7 +100,6 @@ export default function ChatScreen() {
       console.log("file deleted successfully");
     } catch (error) {
       console.error("Upload failed:", error);
-      console.log("Upload failed");
     }
   };
 
@@ -90,7 +118,6 @@ export default function ChatScreen() {
       console.log("File uploaded successfully");
     } catch (error) {
       console.error("Upload failed:", error);
-      console.log("Upload failed");
     }
   };
 
