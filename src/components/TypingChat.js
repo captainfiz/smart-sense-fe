@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import ChartRender from "./Plotly";
 import { ClockLoader } from "react-spinners";
+import { useParams } from "next/navigation";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -12,8 +13,8 @@ function App() {
     type: "",
     value: "",
   });
-  const [checkpointId, setCheckpointId] = useState("");
-
+  const { checkpoint } = useParams();
+  const [checkpointId, setCheckpointId] = useState(checkpoint);
   const messagesEndRef = useRef(null);
   const fullResponseRef = useRef({ value: "", type: "" });
 
@@ -24,6 +25,16 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, currentStreamingResponse.value, scrollToBottom]);
+
+  useEffect(() => {
+    if (checkpointId) {
+      // URL bar में change लेकिन बिना page reload या navigation
+      window.history.replaceState(null, "", `/stream/${checkpointId}`);
+    } else {
+      // checkpointId खाली हो तो base /stream पर वापस जाएं
+      window.history.replaceState(null, "", `/stream`);
+    }
+  }, [checkpointId]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
