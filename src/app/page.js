@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { generateToken, saveToken } from "@/utils/auth";
 import LightningLoader from "@/components/LightningLoader";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -57,7 +56,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="border border-white rounded-md bg-white text-black hover:bg-black hover:text-white py-2"
+                className="border border-white rounded-md bg-white text-black hover:bg-black hover:text-white py-2 cursor-pointer"
               >
                 Continue
               </button>
