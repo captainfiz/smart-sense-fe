@@ -1,4 +1,4 @@
-import { XCircle } from "lucide-react";
+import { FiXCircle } from "react-icons/fi";
 import { useEffect, useRef } from "react";
 
 export default function FilePopup({
@@ -44,8 +44,9 @@ export default function FilePopup({
                 className="flex justify-between items-center"
               >
                 <span>{file.filename}</span>
-                <XCircle
-                  className="w-4 h-4 text-red-400 cursor-pointer"
+                <FiXCircle
+                  size={24}
+                  className="text-red-400 cursor-pointer"
                   onClick={async () => {
                     await onDelete(file._id);
                     await refreshFiles();

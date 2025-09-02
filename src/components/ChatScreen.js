@@ -53,15 +53,12 @@ export default function ChatScreen() {
     if (checkpointId) {
       // URL bar में change लेकिन बिना page reload या navigation
       window.history.replaceState(null, "", `/chat/${checkpointId}`);
-      historyHandler(checkpointId)
-
+      historyHandler(checkpointId);
     } else {
       // checkpointId खाली हो तो base /stream पर वापस जाएं
       window.history.replaceState(null, "", `/chat`);
     }
   }, [checkpointId]);
-
-
 
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -86,7 +83,7 @@ export default function ChatScreen() {
         role: "user",
         text: userMessageText,
         type: "content",
-        checkpointId: checkpointId,
+        thread_id: checkpointId,
       },
     ]);
     setMessageData((prev) => [
@@ -95,7 +92,7 @@ export default function ChatScreen() {
         role: "user",
         text: userMessageText,
         type: "content",
-        checkpointId: checkpointId,
+        thread_id: checkpointId,
       },
     ]);
     setInput("");
@@ -103,7 +100,6 @@ export default function ChatScreen() {
     setIsTyping(false);
     setCurrentStreamingResponse({ type: "", value: "" });
     fullResponseRef.current = { value: "", type: "", checkpointId: "" };
-
     try {
       const res = await fetch("http://localhost:8000/protected/chat", {
         method: "POST",
@@ -179,16 +175,16 @@ export default function ChatScreen() {
             role: "model",
             text: fullResponseRef.current.value.trim(),
             type: fullResponseRef.current.type,
-            checkpointId: fullResponseRef.current.checkpoint_id,
+            thread_id: fullResponseRef.current.checkpoint_id,
           },
         ]);
         setMessageData((prev) => [
           ...prev,
-          {
+           {
             role: "model",
             text: fullResponseRef.current.value.trim(),
             type: fullResponseRef.current.type,
-            checkpointId: fullResponseRef.current.checkpoint_id,
+            thread_id: fullResponseRef.current.checkpoint_id,
           },
         ]);
       }
@@ -197,14 +193,6 @@ export default function ChatScreen() {
       setIsTyping(false);
       setIsLoading(false);
     } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "model",
-          text: `Error: ${error.message}. Please try again.`,
-          type: "content",
-        },
-      ]);
       setCurrentStreamingResponse({ type: "", value: "" });
       setIsLoading(false);
       setIsTyping(false);
@@ -253,6 +241,7 @@ export default function ChatScreen() {
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .reverse();
   };
+  
 
   const historyHandler = async (checkpointId) => {
     try {
@@ -265,7 +254,6 @@ export default function ChatScreen() {
         const response = await axiosInstance.get(
           `/protected/chat-history/${checkpointId}`
         );
-        console.log("response.data.result", response.data.result);
         setMessages(sortAndReverse(response.data.result));
         setMessageData([
           ...messageData,
@@ -278,12 +266,25 @@ export default function ChatScreen() {
   };
 
   const sessionHandler = async (checkpointId) => {
-    setMessages([]);
+    if (!checkpointId) {
+      setMessages([]);
+    }
     setInput("");
-    setCurrentStreamingResponse({ type: "", value: "" });
+    setCurrentStreamingResponse({
+      type: "",
+      value: "",
+      checkpoint_id: checkpointId || "",
+    });
     setCheckpointId(checkpointId);
-    fullResponseRef.current = { value: "", type: "" };
+    fullResponseRef.current = {
+      value: "",
+      type: "",
+      checkpoint_id: checkpointId || "",
+    };
   };
+
+  console.log('messages', messages)
+  console.log('messageData', messageData)
   return (
     <div className="flex h-screen bg-zinc-900 text-white relative">
       {/* Logout Modal */}
@@ -314,20 +315,32 @@ export default function ChatScreen() {
         onLogout={() => setShowLogoutModal(true)}
         metadata={metadata}
         sessionHandler={sessionHandler}
+        checkpointId={checkpointId}
       />
 
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-green-400">Strombreaker</h1>
+          <h1 className="text-lg font-semibold text-white">Strombreaker</h1>
 
           <span className="flex items-center gap-2 text-xs text-zinc-500">
-            <Image alt="Adglobal360" src="/logo.svg" width={50} height={50} priority />
+            <Image
+              alt="Adglobal360"
+              src="/logo.svg"
+              width={50}
+              height={50}
+              priority
+            />
           </span>
         </div>
 
-        <ChatMessages messages={messages} chatEndRef={chatEndRef}  isTyping={isTyping} currentStreamingResponse={currentStreamingResponse}/>
+        <ChatMessages
+          messages={messages}
+          chatEndRef={chatEndRef}
+          isTyping={isTyping}
+          currentStreamingResponse={currentStreamingResponse}
+        />
 
         <ChatInput
           input={input}

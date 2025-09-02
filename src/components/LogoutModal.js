@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { IoIosLogOut } from "react-icons/io";
+import { IoMdClose } from "react-icons/io";
 
 export default function LogoutModal({ show, onCancel, onLogout }) {
   if (!show) return null;
@@ -8,7 +9,7 @@ export default function LogoutModal({ show, onCancel, onLogout }) {
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-white">Confirm Logout</h2>
           <button onClick={onCancel}>
-            <X className="text-zinc-400 hover:text-white w-5 h-5" />
+            <IoMdClose size={30} className="cursor-pointer" />
           </button>
         </div>
         <p className="text-sm text-zinc-400">
@@ -17,15 +18,15 @@ export default function LogoutModal({ show, onCancel, onLogout }) {
         <div className="flex justify-end gap-3 mt-4">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-zinc-600 text-zinc-300 hover:bg-zinc-800"
+            className="px-4 py-2 text-sm rounded-lg border border-zinc-600 text-zinc-300 hover:bg-zinc-800 cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={onLogout}
-            className="px-4 py-2 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white"
+            className="px-4 py-2 text-sm rounded-lg bg-red-500 hover:bg-red-600 text-white flex items-center gap-2 flex-row cursor-pointer"
           >
-            Logout
+            Logout <IoIosLogOut size={20} />
           </button>
         </div>
       </div>

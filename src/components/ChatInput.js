@@ -1,5 +1,5 @@
-import { Paperclip, SendHorizonal } from "lucide-react";
-
+import { LuSendHorizontal } from "react-icons/lu";
+import { FaCircleStop } from "react-icons/fa6";
 export default function ChatInput({
   input,
   setInput,
@@ -12,7 +12,7 @@ export default function ChatInput({
     <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex items-center gap-3">
       <input
         type="text"
-        placeholder="Talk to Smart Sense by Team Strombreaker..."
+        placeholder="Talk to Smart Sense by Strombreaker..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
         disabled={isLoading || isTyping}
@@ -28,10 +28,10 @@ export default function ChatInput({
       </button> */}
       <button
         onClick={onSend}
-        className="bg-yellow-400 hover:bg-green-500 text-black rounded-full p-3 transition"
+        className="bg-orange-500 hover:bg-orange-400 text-black rounded-full p-3 transition cursor-pointer"
         disabled={isLoading || isTyping}
       >
-        <SendHorizonal className="w-6 h-6" />
+        {isLoading || isTyping ? <FaCircleStop size={24} color="white" /> : <LuSendHorizontal color="white"  size={24} />}
       </button>
     </div>
   );

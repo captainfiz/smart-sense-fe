@@ -1,35 +1,48 @@
 import Image from "next/image";
 import ChartRender from "./Plotly";
+import { ClockLoader } from "react-spinners";
+import Markdown from "react-markdown";
 
 function parseChartResponse(input) {
-  const blocks = [];
-  const regex = /```json\s*([\s\S]*?)\s*```/g;
+  const charts = [];
+  let text = "";
+
+  const regex = /```json\s*({[\s\S]*?})\s*```/g;
   let lastIndex = 0;
   let match;
 
   while ((match = regex.exec(input)) !== null) {
+    // Text before JSON
     const textChunk = input.slice(lastIndex, match.index).trim();
     if (textChunk) {
-      blocks.push({ type: "text", body: textChunk });
+      text += (text ? "\n\n" : "") + textChunk;
     }
 
     try {
-      const chartData = JSON.parse(match[1]);
-      blocks.push({ type: "graph", data: chartData });
+      let jsonStr = match[1].trim();
+
+      // fix for invalid escape sequences like \'
+      jsonStr = jsonStr.replace(/\\'/g, "'");
+
+      const chartData = JSON.parse(jsonStr);
+      charts.push(chartData);
     } catch (e) {
-      blocks.push({ type: "text", body: match[0].trim() });
+      text += (text ? "\n\n" : "") + match[0].trim();
     }
 
     lastIndex = regex.lastIndex;
   }
 
+  // Remaining text after last JSON
   const remainingText = input.slice(lastIndex).trim();
   if (remainingText) {
-    blocks.push({ type: "text", body: remainingText });
+    text += (text ? "\n\n" : "") + remainingText;
   }
 
-  return blocks;
+  return { text, charts };
 }
+
+// --- ChatMessages Component ---
 export default function ChatMessages({
   messages,
   chatEndRef,
@@ -38,6 +51,7 @@ export default function ChatMessages({
 }) {
   return (
     <div className="flex-1 relative overflow-y-auto p-6">
+      {/* background watermark */}
       <div className="fixed inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
         <Image
           src="/loader.png"
@@ -47,33 +61,48 @@ export default function ChatMessages({
           className="select-none"
         />
       </div>
+
       <div className="relative z-10 space-y-4">
         {messages.map((msg, index) => {
-          console.log("msg", msg);
-          if (msg.role == "model") {
-            return parseChartResponse(msg.text).map((block, i) => (
-              <div key={`block-${index}-${i}`} className="flex justify-start">
-                <div className="max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md bg-white text-gray-800 rounded-bl-none">
-                  {block.type === "graph" ? (
-                    <ChartRender index={index} value={block.data} />
-                  ) : (
-                    <p>{block.body}</p>
+          if (msg.role === "model") {
+            const { text, charts } = parseChartResponse(msg.text);
+
+            return (
+              <div key={`model-${index}`} className="flex justify-start">
+                <div className="max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md bg-white text-gray-800 rounded-bl-none space-y-4">
+                  {/* Multiple Charts */}
+                  {charts.map((chart, cIndex) => (
+                    <ChartRender
+                      key={`chart-${index}-${cIndex}`}
+                      index={index}
+                      value={chart}
+                    />
+                  ))}
+
+                  {/* Text */}
+                  {text && (
+                    <div className="prose prose-sm whitespace-pre-wrap">
+                      <Markdown>{text}</Markdown>
+                    </div>
                   )}
                 </div>
               </div>
-            ));
+            );
           } else {
             return (
               <div key={`user-${index}`} className="flex justify-end">
                 <div className="max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md bg-blue-500 text-white rounded-br-none">
-                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  <div className="prose prose-sm whitespace-pre-wrap">
+                    <Markdown>{msg.text}</Markdown>
+                  </div>
                 </div>
               </div>
             );
           }
         })}
 
-        {isTyping && !currentStreamingResponse.value && (
+        {/* Typing indicator */}
+        {isTyping && !currentStreamingResponse?.value && (
           <div className="flex justify-start">
             <div className="max-w-xs md:max-w-md lg:max-w-lg p-3 rounded-lg shadow-md bg-white text-gray-800 rounded-bl-none">
               <p className="animate-pulse">Thinking...</p>
@@ -81,7 +110,8 @@ export default function ChatMessages({
           </div>
         )}
 
-        {!currentStreamingResponse.type === "content" && (
+        {/* Streaming response */}
+        {currentStreamingResponse?.value && (
           <div className="flex justify-start">
             <div className="max-w-xs md:max-w-md lg:max-w-lg px-4 py-5 rounded-lg shadow-md bg-white text-gray-800 rounded-bl-none flex items-center space-x-3 min-h-[80px] animate-fadeIn">
               {/```(?:json)?/.test(currentStreamingResponse.value) ? (
@@ -100,6 +130,7 @@ export default function ChatMessages({
             </div>
           </div>
         )}
+
         <div ref={chatEndRef} />
       </div>
     </div>
