@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import useAuthRedirect from "@/hooks/useAuthRedirect";
 import LogoutModal from "./LogoutModal";
-import FilePopup from "./FilePopup";
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
 import ChatInput from "./ChatInput";
@@ -16,10 +15,7 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState([]);
   const [messageData, setMessageData] = useState([]);
   const [input, setInput] = useState("");
-  const [showFilePopup, setShowFilePopup] = useState(false);
-  const [selectedFile, setSelectedFile] = useState([]);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState(null);
   const { checkpoint } = useParams();
   const [checkpointId, setCheckpointId] = useState(checkpoint);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,11 +35,6 @@ export default function ChatScreen() {
       .catch((err) => console.error(err));
 
     axiosInstance
-      .get("/protected/uploads")
-      .then((res) => setUploadedFiles(res.data.files))
-      .catch((err) => console.error(err));
-
-    axiosInstance
       .get("/protected/threads")
       .then((res) => setMetadata(res.data.result))
       .catch((err) => console.error(err));
@@ -60,17 +51,8 @@ export default function ChatScreen() {
     }
   }, [checkpointId]);
 
-  const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
   const router = useRouter();
-
-  const handleFileButtonClick = () => {
-    setShowFilePopup((prev) => !prev);
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -180,7 +162,7 @@ export default function ChatScreen() {
         ]);
         setMessageData((prev) => [
           ...prev,
-           {
+          {
             role: "model",
             text: fullResponseRef.current.value.trim(),
             type: fullResponseRef.current.type,
@@ -209,39 +191,6 @@ export default function ChatScreen() {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
-  const deleteFile = async (id) => {
-    try {
-      const res = await axiosInstance.delete(`/protected/upload/${id}`);
-      console.log("file deleted successfully");
-    } catch (error) {
-      console.error("Upload failed:", error);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) return console.log("Please select a file first.");
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    try {
-      const res = await axiosInstance.post("/protected/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("File uploaded successfully");
-    } catch (error) {
-      console.error("Upload failed:", error);
-    }
-  };
-  const sortAndReverse = (data) => {
-    return [...data]
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .reverse();
-  };
-  
 
   const historyHandler = async (checkpointId) => {
     try {
@@ -283,8 +232,11 @@ export default function ChatScreen() {
     };
   };
 
-  console.log('messages', messages)
-  console.log('messageData', messageData)
+  const sortAndReverse = (data) => {
+    return [...data]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .reverse();
+  };
   return (
     <div className="flex h-screen bg-zinc-900 text-white relative">
       {/* Logout Modal */}
@@ -293,22 +245,6 @@ export default function ChatScreen() {
         show={showLogoutModal}
         onCancel={() => setShowLogoutModal(false)}
         onLogout={handleLogout}
-      />
-
-      <FilePopup
-        show={showFilePopup}
-        uploadedFiles={uploadedFiles}
-        selectedFile={selectedFile}
-        setSelectedFile={setSelectedFile}
-        onClose={() => setShowFilePopup(false)}
-        onUpload={handleUpload}
-        onDelete={deleteFile}
-        fileInputRef={fileInputRef}
-        refreshFiles={async () => {
-          const res = await axiosInstance.get("/protected/uploads");
-          setUploadedFiles(res.data.files);
-        }}
-        onUploadClick={handleUploadClick}
       />
 
       <Sidebar
@@ -346,7 +282,6 @@ export default function ChatScreen() {
           input={input}
           setInput={setInput}
           onSend={handleSendMessage}
-          onFileButtonClick={handleFileButtonClick}
           isLoading={isLoading}
           isTyping={isTyping}
         />

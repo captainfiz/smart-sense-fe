@@ -52,15 +52,15 @@ export default function ChatMessages({
   return (
     <div className="flex-1 relative overflow-y-auto p-6">
       {/* background watermark */}
-      <div className="fixed inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
+      {/* <div className="fixed inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
         <Image
-          src="/loader.png"
+          src="/logo.svg"
           alt="Background Logo"
           width={300}
           height={300}
           className="select-none"
         />
-      </div>
+      </div> */}
 
       <div className="relative z-10 space-y-4">
         {messages.map((msg, index) => {

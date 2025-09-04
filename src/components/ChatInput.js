@@ -4,7 +4,6 @@ export default function ChatInput({
   input,
   setInput,
   onSend,
-  onFileButtonClick,
   isTyping,
   isLoading
 }) {
@@ -23,9 +22,6 @@ export default function ChatInput({
         }}
         className="flex-1 p-3 rounded-full border bg-zinc-800 border-zinc-700 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-400 text-white"
       />
-      {/* <button onClick={onFileButtonClick}>
-        <Paperclip className="text-zinc-400 hover:text-white w-5 h-5" />
-      </button> */}
       <button
         onClick={onSend}
         className="bg-orange-500 hover:bg-orange-400 text-black rounded-full p-3 transition cursor-pointer"
