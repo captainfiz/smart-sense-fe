@@ -23,16 +23,16 @@ export default function Home() {
   };
 
   return (
-    <div className="relative h-screen overflow-hidden">
+    <div className="relative h-screen overflow-hidden bg-white">
       <LightningLoader />
 
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 text-3xl font-bold text-center z-10">
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 text-3xl font-bold text-center text-zinc-800 z-10">
         Smart Sense
-        <div className="text-base font-normal">Presented by Strombreaker</div>
+        <div className="text-base font-normal">Presented by Stormbreaker</div>
       </div>
 
-      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-full max-w-xs">
-        <h2 className="my-1 text-center">Please Enter Employee Code</h2>
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-xs">
+        <h2 className="my-1 text-center text-zinc-800">Please Enter Employee Code</h2>
 
         <Formik
           initialValues={{ employeeCode: "" }}
@@ -45,7 +45,7 @@ export default function Home() {
                 name="employeeCode"
                 type="text"
                 placeholder="Employee Code"
-                className="border border-white rounded-md p-2 bg-transparent text-white placeholder-white"
+                className="border border-zinc-800 rounded-md p-2 bg-transparent text-zinc-800 placeholder-gray-500"
               />
               <ErrorMessage
                 name="employeeCode"
@@ -56,7 +56,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="border border-white rounded-md bg-white text-black hover:bg-black hover:text-white py-2 cursor-pointer"
+                className="border border-zinc-800 rounded-md bg-zinc-800 text-white hover:bg-white hover:text-zinc-800 py-2 cursor-pointer"
               >
                 Continue
               </button>

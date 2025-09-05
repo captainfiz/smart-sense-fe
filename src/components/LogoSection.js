@@ -15,7 +15,7 @@ const LogoSection = () => {
         />
       </div>
       <p className="text-1xl font-semibold drop-shadow-[0_0_10px_rgba(255,255,0,0.8)]">
-        STROMBREAKER
+        STORMBREAKER
       </p>
     </div>
   );

@@ -26,6 +26,7 @@ export default function ChatScreen() {
   });
   const [metadata, setMetadata] = useState([]);
   const [user, setUser] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const fullResponseRef = useRef({ value: "", type: "" });
 
   useEffect(() => {
@@ -238,7 +239,7 @@ export default function ChatScreen() {
       .reverse();
   };
   return (
-    <div className="flex h-screen bg-zinc-900 text-white relative">
+    <div className="flex h-screen text-white bg-white relative">
       {/* Logout Modal */}
 
       <LogoutModal
@@ -248,17 +249,25 @@ export default function ChatScreen() {
       />
 
       <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
         onLogout={() => setShowLogoutModal(true)}
         metadata={metadata}
         sessionHandler={sessionHandler}
         checkpointId={checkpointId}
+        user={user}
       />
 
       {/* Main Chat Area */}
       <main className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-white">Strombreaker</h1>
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex flex-col items-start">
+            <h1 className="text-lg font-semibold text-gray-700">Smart Sense</h1>
+            <p className="text-sm font-semibold text-gray-700">
+              (Powered by Stormbreaker)
+            </p>
+          </div>
 
           <span className="flex items-center gap-2 text-xs text-zinc-500">
             <Image
@@ -267,24 +276,26 @@ export default function ChatScreen() {
               width={50}
               height={50}
               priority
+              className="invert"
             />
           </span>
         </div>
+        <div className="w-[75%] mx-auto flex flex-col flex-1 gap-5">
+          <ChatMessages
+            messages={messages}
+            chatEndRef={chatEndRef}
+            isTyping={isTyping}
+            currentStreamingResponse={currentStreamingResponse}
+          />
 
-        <ChatMessages
-          messages={messages}
-          chatEndRef={chatEndRef}
-          isTyping={isTyping}
-          currentStreamingResponse={currentStreamingResponse}
-        />
-
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          onSend={handleSendMessage}
-          isLoading={isLoading}
-          isTyping={isTyping}
-        />
+          <ChatInput
+            input={input}
+            setInput={setInput}
+            onSend={handleSendMessage}
+            isLoading={isLoading}
+            isTyping={isTyping}
+          />
+        </div>
       </main>
     </div>
   );

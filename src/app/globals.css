@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Hide scrollbar for Webkit-based browsers (Chrome, Safari, Edge, Opera) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE and older Edge versions */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+}

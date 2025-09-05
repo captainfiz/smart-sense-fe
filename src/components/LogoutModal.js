@@ -1,24 +1,34 @@
-import { IoIosLogOut } from "react-icons/io";
-import { IoMdClose } from "react-icons/io";
+import { IoIosLogOut, IoMdClose } from "react-icons/io";
 
 export default function LogoutModal({ show, onCancel, onLogout }) {
   if (!show) return null;
   return (
-    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-zinc-950 border border-zinc-700 rounded-xl p-6 w-full max-w-sm space-y-4">
+    <div
+      className="absolute inset-0 bg-black/40 flex items-center justify-center z-50"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-xl p-4 w-full max-w-sm space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-white">Confirm Logout</h2>
+          <h2 className="text-lg font-semibold text-zinc-800">
+            Confirm Logout
+          </h2>
           <button onClick={onCancel}>
-            <IoMdClose size={30} className="cursor-pointer" />
+            <IoMdClose
+              size={30}
+              className="cursor-pointer text-zinc-400 hover:text-zinc-600"
+            />
           </button>
         </div>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-zinc-600">
           Are you sure you want to logout from Smart Sense?
         </p>
         <div className="flex justify-end gap-3 mt-4">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-zinc-600 text-zinc-300 hover:bg-zinc-800 cursor-pointer"
+            className="px-4 py-2 text-sm rounded-lg border border-zinc-600 text-zinc-400 hover:bg-zinc-800 hover:text-white cursor-pointer"
           >
             Cancel
           </button>

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 const LightningLoader = () => {
   return (
-    <div className="absolute inset-0 z-0 bg-black flex items-center justify-center h-screen">
+    <div className="absolute inset-0 z-0 bg-[#ffffff] flex items-center justify-center h-screen">
       <Image
         src="/loader.png"
         width={100}

@@ -5,13 +5,13 @@ export default function ChatInput({
   setInput,
   onSend,
   isTyping,
-  isLoading
+  isLoading,
 }) {
   return (
-    <div className="p-4 border-t border-zinc-800 bg-zinc-950 flex items-center gap-3">
+    <div className="p-4 border rounded-3xl border-gray-400 flex items-center gap-3">
       <input
         type="text"
-        placeholder="Talk to Smart Sense by Strombreaker..."
+        placeholder="Talk to Smart Sense"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         disabled={isLoading || isTyping}
@@ -20,14 +20,18 @@ export default function ChatInput({
             onSend(e);
           }
         }}
-        className="flex-1 p-3 rounded-full border bg-zinc-800 border-zinc-700 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-green-400 text-white"
+        className="flex-1 p-3 rounded-full placeholder-zinc-500 focus:outline-none text-zinc-800"
       />
       <button
         onClick={onSend}
-        className="bg-orange-500 hover:bg-orange-400 text-black rounded-full p-3 transition cursor-pointer"
+        className="bg-[#f0f4f9] hover:bg-[#dadde1] text-zinc-800 rounded-full p-3 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
         disabled={isLoading || isTyping}
       >
-        {isLoading || isTyping ? <FaCircleStop size={24} color="white" /> : <LuSendHorizontal color="white"  size={24} />}
+        {isLoading || isTyping ? (
+          <FaCircleStop size={24} />
+        ) : (
+          <LuSendHorizontal size={24} />
+        )}
       </button>
     </div>
   );
