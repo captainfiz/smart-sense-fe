@@ -52,7 +52,7 @@ function App() {
     fullResponseRef.current = { value: "", type: "" };
 
     try {
-      const res = await fetch("http://localhost:8000/protected/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/protected/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

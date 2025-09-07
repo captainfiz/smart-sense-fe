@@ -42,7 +42,7 @@ export default function ChatInput({
   }
 
   return (
-    <div className="p-4 border rounded-3xl border-gray-400 flex items-center gap-3">
+    <div className="p-4 border rounded-3xl border-gray-400 flex items-center gap-3 ">
       {/* Input field */}
       <input
         type="text"

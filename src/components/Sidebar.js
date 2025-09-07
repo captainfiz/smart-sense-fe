@@ -2,7 +2,9 @@ import moment from "moment";
 import Markdown from "react-markdown";
 import { BiSolidEdit, BiMessageSquareDetail } from "react-icons/bi";
 import { IoIosLogOut } from "react-icons/io";
-import { FiChevronLeft, FiMenu } from "react-icons/fi";
+import { FiChevronLeft, FiDatabase, FiMenu } from "react-icons/fi";
+import { IoBusinessOutline } from "react-icons/io5";
+import { useRouter } from "next/navigation";
 
 export default function Sidebar({
   collapsed,
@@ -12,7 +14,12 @@ export default function Sidebar({
   sessionHandler,
   checkpointId,
   user,
-}) {
+  fileInputRef,
+  handleFileButtonClick,
+  onProjectSwitchClick,
+  }) {
+  const router = useRouter();
+  
   const stripMarkdown = (markdown) =>
     markdown
       .replace(/(\*\*|__)(.*?)\1/g, "$2")
@@ -68,12 +75,26 @@ export default function Sidebar({
           <BiSolidEdit size={20} />
           {!collapsed && "New Chat"}
         </button>
+        <button
+          className="w-full text-left text-zinc-800 py-2 px-3 rounded-full hover:bg-gray-200 hover:text-gray-800 transition cursor-pointer flex items-center gap-2"
+          onClick={handleFileButtonClick}
+        >
+          <FiDatabase size={20} />
+          {!collapsed && "Data Sources"}
+        </button>
+        <button
+          className="w-full text-left text-zinc-800 py-2 px-3 rounded-full hover:bg-gray-200 hover:text-gray-800 transition cursor-pointer flex items-center gap-2"
+          onClick={() => router.push("/projects")}
+        >
+          <IoBusinessOutline size={20} />
+          {!collapsed && "Projects"}
+        </button>
 
         {metadata?.map((item, i) => (
           <button
             key={i}
             className={`w-full text-left py-2 px-3 rounded-full transition cursor-pointer flex items-center gap-2 ${
-              item.thread_id === checkpointId
+              item.thread_id == checkpointId
                 ? "bg-[#d3e3fd] text-blue-400"
                 : "hover:bg-gray-200 hover:text-gray-800 text-zinc-800"
             }`}

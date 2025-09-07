@@ -104,7 +104,7 @@ export default function ChatMessages({
 
                     {/* Text */}
                     {text && (
-                      <div className="prose prose-sm whitespace-pre-wrap">
+                      <div className="prose prose-sm whitespace-pre-wrap max-w-xs md:max-w-md lg:max-w-lg truncate break-words">
                         <Markdown>{text}</Markdown>
                       </div>
                     )}
