@@ -9,6 +9,7 @@ import ChatInput from "./ChatInput";
 import ChatMessages from "./ChatMessages";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import FilePopup from "./FilePopup";
 
 export default function ChatScreen() {
   useAuthRedirect();
@@ -28,13 +29,56 @@ export default function ChatScreen() {
   const [user, setUser] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const fullResponseRef = useRef({ value: "", type: "" });
+  const [showFilePopup, setShowFilePopup] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState(null);
+  const [selectedFile, setSelectedFile] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const handleFileButtonClick = () => {
+    setShowFilePopup((prev) => !prev);
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const deleteFile = async (id) => {
+    try {
+      const res = await axiosInstance.delete(`/protected/upload/${id}`);
+      console.log("file deleted successfully");
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return console.log("Please select a file first.");
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const res = await axiosInstance.post("/protected/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("File uploaded successfully");
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
 
   useEffect(() => {
     axiosInstance
       .get("/protected/info")
       .then((res) => setUser(res.data))
       .catch((err) => console.error(err));
-
+    axiosInstance
+      .get("/protected/uploads")
+      .then((res) => {console.log(res.data);
+       setUploadedFiles(res.data.files)})
+      .catch((err) => console.error(err));
     axiosInstance
       .get("/protected/threads")
       .then((res) => setMetadata(res.data.result))
@@ -248,6 +292,22 @@ export default function ChatScreen() {
         onLogout={handleLogout}
       />
 
+      <FilePopup
+        show={showFilePopup}
+        uploadedFiles={uploadedFiles}
+        selectedFile={selectedFile}
+        setSelectedFile={setSelectedFile}
+        onClose={() => setShowFilePopup(false)}
+        onUpload={handleUpload}
+        onDelete={deleteFile}
+        fileInputRef={fileInputRef}
+        refreshFiles={async () => {
+          const res = await axiosInstance.get("/protected/uploads");
+          setUploadedFiles(res.data.files);
+        }}
+        onUploadClick={handleUploadClick}
+      />
+
       <Sidebar
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
@@ -256,6 +316,8 @@ export default function ChatScreen() {
         sessionHandler={sessionHandler}
         checkpointId={checkpointId}
         user={user}
+        fileInputRef={fileInputRef}
+        handleFileButtonClick={handleFileButtonClick}
       />
 
       {/* Main Chat Area */}

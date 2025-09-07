@@ -2,7 +2,7 @@ import moment from "moment";
 import Markdown from "react-markdown";
 import { BiSolidEdit, BiMessageSquareDetail } from "react-icons/bi";
 import { IoIosLogOut } from "react-icons/io";
-import { FiChevronLeft, FiMenu } from "react-icons/fi";
+import { FiChevronLeft, FiDatabase, FiMenu } from "react-icons/fi";
 
 export default function Sidebar({
   collapsed,
@@ -12,6 +12,8 @@ export default function Sidebar({
   sessionHandler,
   checkpointId,
   user,
+  fileInputRef,
+  handleFileButtonClick,
 }) {
   const stripMarkdown = (markdown) =>
     markdown
@@ -67,6 +69,13 @@ export default function Sidebar({
         >
           <BiSolidEdit size={20} />
           {!collapsed && "New Chat"}
+        </button>
+        <button
+          className="w-full text-left text-zinc-800 py-2 px-3 rounded-full hover:bg-gray-200 hover:text-gray-800 transition cursor-pointer flex items-center gap-2"
+          onClick={handleFileButtonClick}
+        >
+          <FiDatabase size={20} />
+          {!collapsed && "Data Sources"}
         </button>
 
         {metadata?.map((item, i) => (
