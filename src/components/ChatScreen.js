@@ -9,7 +9,8 @@ import ChatInput from "./ChatInput";
 import ChatMessages from "./ChatMessages";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import FilePopup from "./FilePopup";
+import ProjectSwitcher from "./ProjectSwitcher";
+import useProjects from "@/hooks/useProjects";
 
 export default function ChatScreen() {
   useAuthRedirect();
@@ -17,8 +18,6 @@ export default function ChatScreen() {
   const [messageData, setMessageData] = useState([]);
   const [input, setInput] = useState("");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const { checkpoint } = useParams();
-  const [checkpointId, setCheckpointId] = useState(checkpoint);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [currentStreamingResponse, setCurrentStreamingResponse] = useState({
@@ -33,39 +32,66 @@ export default function ChatScreen() {
   const [uploadedFiles, setUploadedFiles] = useState(null);
   const [selectedFile, setSelectedFile] = useState([]);
   const fileInputRef = useRef(null);
+  const [showProjectSwitcher, setShowProjectSwitcher] = useState(false);
+  const [projectId, setProjectId] = useState("");
+  const router = useRouter();
+  const { checkpoint: paramCheckpoint } = useParams();
+  const [checkpointId, setCheckpointId] = useState("");
+
+  useEffect(() => {
+    console.log("object", paramCheckpoint);
+  }, [paramCheckpoint]);
+
+  useEffect(() => {
+    // if (!paramCheckpoint || paramCheckpoint.length === 0) {
+    //   router.push("/projects");
+    //   return;
+    // }
+
+    if (paramCheckpoint?.length === 2) {
+      const [newProjectId, newCheckpointId] = paramCheckpoint;
+      setProjectId(newProjectId);
+      setCheckpointId(newCheckpointId);
+    } else if (paramCheckpoint?.length === 1) {
+      const [newProjectId] = paramCheckpoint;
+      setProjectId(newProjectId);
+      setCheckpointId("");
+    } else {
+      router.push("/projects");
+    }
+  }, [paramCheckpoint]);
+
+  const {
+    projects,
+    currentProject,
+    isLoading: projectsLoading,
+    switchProject,
+  } = useProjects();
 
   const handleFileButtonClick = () => {
     setShowFilePopup((prev) => !prev);
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
+  const handleProjectSwitchClick = () => {
+    setShowProjectSwitcher(true);
   };
 
-  const deleteFile = async (id) => {
-    try {
-      const res = await axiosInstance.delete(`/protected/upload/${id}`);
-      console.log("file deleted successfully");
-    } catch (error) {
-      console.error("Upload failed:", error);
+  const handleProjectChange = (project) => {
+    switchProject(project);
+
+    // Get project ID and update state
+    const newProjectId = project._id;
+    if (newProjectId) {
+      setProjectId(newProjectId);
     }
-  };
 
-  const handleUpload = async () => {
-    if (!selectedFile) return console.log("Please select a file first.");
+    setMessages([]);
+    setMessageData([]);
+    setCheckpointId("");
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    try {
-      const res = await axiosInstance.post("/protected/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("File uploaded successfully");
-    } catch (error) {
-      console.error("Upload failed:", error);
+    // Update URL to reflect new project
+    if (newProjectId) {
+      window.history.replaceState(null, "", `/chat/${newProjectId}`);
     }
   };
 
@@ -74,43 +100,60 @@ export default function ChatScreen() {
       .get("/protected/info")
       .then((res) => setUser(res.data))
       .catch((err) => console.error(err));
-    axiosInstance
-      .get("/protected/uploads")
-      .then((res) => {console.log(res.data);
-       setUploadedFiles(res.data.files)})
-      .catch((err) => console.error(err));
-    axiosInstance
-      .get("/protected/threads")
-      .then((res) => setMetadata(res.data.result))
-      .catch((err) => console.error(err));
+    // axiosInstance
+    //   .get("/protected/uploads")
+    //   .then((res) => {console.log(res.data);
+    //    setUploadedFiles(res.data.files)})
+    //   .catch((err) => console.error(err));
   }, []);
+
+  useEffect(() => {
+    if (projectId) {
+      axiosInstance
+        .get(`/protected/threads/${projectId}`)
+        .then((res) => setMetadata(res.data.result))
+        .catch((err) => console.error(err));
+      axiosInstance
+        .get(`/protected/project/${projectId}`)
+        .then((res) =>
+          setMetadata(Array.isArray(res.data.result) ? res.data.result : [])
+        )
+        .catch((err) => console.error(err));
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (checkpointId) {
       // URL bar में change लेकिन बिना page reload या navigation
-      window.history.replaceState(null, "", `/chat/${checkpointId}`);
+      window.history.replaceState(
+        null,
+        "",
+        `/chat/${projectId}/${checkpointId}`
+      );
       historyHandler(checkpointId);
     } else {
       // checkpointId खाली हो तो base /stream पर वापस जाएं
-      window.history.replaceState(null, "", `/chat`);
+      window.history.replaceState(null, "", `/chat/${projectId}`);
     }
   }, [checkpointId]);
 
   const chatEndRef = useRef(null);
-  const router = useRouter();
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading || isTyping) return;
 
     const userMessageText = input.trim();
+    const currentCheckpointId =
+      fullResponseRef.current.checkpoint_id || checkpointId;
+
     setMessages((prev) => [
       ...prev,
       {
         role: "user",
         text: userMessageText,
         type: "content",
-        thread_id: checkpointId,
+        thread_id: currentCheckpointId,
       },
     ]);
     setMessageData((prev) => [
@@ -119,27 +162,40 @@ export default function ChatScreen() {
         role: "user",
         text: userMessageText,
         type: "content",
-        thread_id: checkpointId,
+        thread_id: currentCheckpointId,
       },
     ]);
     setInput("");
     setIsLoading(true);
     setIsTyping(false);
     setCurrentStreamingResponse({ type: "", value: "" });
-    fullResponseRef.current = { value: "", type: "", checkpointId: "" };
+
+    // Reset fullResponseRef but preserve the checkpoint ID
+    fullResponseRef.current = {
+      value: "",
+      type: "",
+      checkpoint_id: currentCheckpointId,
+    };
+
+    const requestPayload = {
+      input: userMessageText,
+      checkpoint_id: currentCheckpointId,
+      project_id: projectId,
+    };
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/protected/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        body: JSON.stringify({
-          input: userMessageText,
-          checkpoint_id: checkpointId,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/protected/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "text/event-stream",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          body: JSON.stringify(requestPayload),
+        }
+      );
 
       if (!res.body)
         throw new Error("Response body is null. SSE stream not available.");
@@ -161,13 +217,18 @@ export default function ChatScreen() {
 
         for (let line of lines) {
           line = line.trim();
-          if (!line.startsWith("data:")) continue;
-
-          while (line.startsWith("data:")) line = line.slice(5).trim();
           if (!line) continue;
 
+          // Handle different line formats - some may have "data:" prefix, some may not
+          let jsonData = line;
+          if (line.startsWith("data:")) {
+            jsonData = line.slice(5).trim();
+          }
+
+          if (!jsonData) continue;
+
           try {
-            const parsedData = JSON.parse(line);
+            const parsedData = JSON.parse(jsonData);
             if (parsedData.type === "content") {
               setCurrentStreamingResponse((prev) => {
                 const newValue = prev.value + (parsedData.content || "");
@@ -179,18 +240,58 @@ export default function ChatScreen() {
                 return { type: parsedData.type, value: newValue };
               });
             } else if (parsedData.type === "checkpoint") {
-              setCheckpointId(parsedData.checkpoint_id);
-              parsedData.metavalue.title &&
-                setMetadata([parsedData.metavalue, ...metadata]);
+              const newCheckpointId = parsedData.checkpoint_id;
+
+              if (newCheckpointId !== checkpointId) {
+                setCheckpointId(newCheckpointId);
+                fullResponseRef.current.checkpoint_id = newCheckpointId;
+
+                if (projectId && newCheckpointId) {
+                  const newUrl = `/chat/${projectId}/${newCheckpointId}`;
+                  window.history.replaceState(null, "", newUrl);
+                }
+              } else {
+                fullResponseRef.current.checkpoint_id = newCheckpointId;
+              }
+
+              // Update metadata
+              if (parsedData.metavalue && parsedData.metavalue.title) {
+                setMetadata((prev) => [
+                  parsedData.metavalue,
+                  ...(Array.isArray(prev) ? prev : []),
+                ]);
+              }
             } else if (parsedData.type === "end") {
               break;
             }
           } catch (e) {
-            setCurrentStreamingResponse((prev) => {
-              const newValue = prev.value + line;
-              fullResponseRef.current.value = newValue;
-              return { ...prev, value: newValue };
-            });
+            if (
+              jsonData.includes('"type":"checkpoint"') ||
+              jsonData.includes("checkpoint_id")
+            ) {
+              try {
+                const checkpointMatch = jsonData.match(
+                  /"checkpoint_id":\s*"([^"]+)"/
+                );
+                if (checkpointMatch && checkpointMatch[1]) {
+                  const extractedCheckpointId = checkpointMatch[1];
+                  setCheckpointId(extractedCheckpointId);
+
+                  if (projectId && extractedCheckpointId) {
+                    const newUrl = `/chat/${projectId}/${extractedCheckpointId}`;
+                    window.history.replaceState(null, "", newUrl);
+                  }
+                }
+              } catch (manualParseError) {
+                // Silent fallback
+              }
+            } else {
+              setCurrentStreamingResponse((prev) => {
+                const newValue = prev.value + jsonData;
+                fullResponseRef.current.value = newValue;
+                return { ...prev, value: newValue };
+              });
+            }
           }
         }
       }
@@ -248,10 +349,11 @@ export default function ChatScreen() {
         const response = await axiosInstance.get(
           `/protected/chat-history/${checkpointId}`
         );
-        setMessages(sortAndReverse(response.data.result));
-        setMessageData([
-          ...messageData,
-          ...sortAndReverse(response.data.result),
+        const sortedResult = sortAndReverse(response.data.result);
+        setMessages(sortedResult);
+        setMessageData((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          ...sortedResult,
         ]);
       }
     } catch (err) {
@@ -262,6 +364,18 @@ export default function ChatScreen() {
   const sessionHandler = async (checkpointId) => {
     if (!checkpointId) {
       setMessages([]);
+
+      if (projectId) {
+        const newUrl = `/chat/${projectId}`;
+        window.history.replaceState(null, "", newUrl);
+      }
+    } else {
+      historyHandler(checkpointId);
+
+      if (projectId && checkpointId) {
+        const newUrl = `/chat/${projectId}/${checkpointId}`;
+        window.history.replaceState(null, "", newUrl);
+      }
     }
     setInput("");
     setCurrentStreamingResponse({
@@ -278,6 +392,10 @@ export default function ChatScreen() {
   };
 
   const sortAndReverse = (data) => {
+    if (!Array.isArray(data)) {
+      console.warn("sortAndReverse received non-array data:", data);
+      return [];
+    }
     return [...data]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .reverse();
@@ -292,7 +410,7 @@ export default function ChatScreen() {
         onLogout={handleLogout}
       />
 
-      <FilePopup
+      {/* <FilePopup
         show={showFilePopup}
         uploadedFiles={uploadedFiles}
         selectedFile={selectedFile}
@@ -306,6 +424,15 @@ export default function ChatScreen() {
           setUploadedFiles(res.data.files);
         }}
         onUploadClick={handleUploadClick}
+      /> */}
+
+      <ProjectSwitcher
+        show={showProjectSwitcher}
+        onClose={() => setShowProjectSwitcher(false)}
+        projects={projects}
+        currentProject={currentProject}
+        onProjectChange={handleProjectChange}
+        isLoading={projectsLoading}
       />
 
       <Sidebar
@@ -318,6 +445,7 @@ export default function ChatScreen() {
         user={user}
         fileInputRef={fileInputRef}
         handleFileButtonClick={handleFileButtonClick}
+        onProjectSwitchClick={handleProjectSwitchClick}
       />
 
       {/* Main Chat Area */}
@@ -325,10 +453,26 @@ export default function ChatScreen() {
         {/* Header */}
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex flex-col items-start">
-            <h1 className="text-lg font-semibold text-gray-700">Smart Sense</h1>
-            <p className="text-sm font-semibold text-gray-700">
+            {/* <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-gray-700">
+                Smart Sense
+              </h1>
+              <div className="flex gap-2">
+                {projectId && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                    Project: {projectId}
+                  </span>
+                )}
+                {checkpointId && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                    Session: {checkpointId.slice(0, 8)}...
+                  </span>
+                )}
+              </div>
+            </div> */}
+            {/* <p className="text-sm font-semibold text-gray-700">
               (Powered by Stormbreaker)
-            </p>
+            </p> */}
           </div>
 
           <span className="flex items-center gap-2 text-xs text-zinc-500">
