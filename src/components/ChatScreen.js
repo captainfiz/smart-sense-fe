@@ -84,7 +84,7 @@ export default function ChatScreen() {
     setCurrentStreamingResponse({ type: "", value: "" });
     fullResponseRef.current = { value: "", type: "", checkpointId: "" };
     try {
-      const res = await fetch("http://localhost:8001/protected/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/protected/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
