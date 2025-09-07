@@ -280,7 +280,7 @@ export default function ChatScreen() {
             />
           </span>
         </div>
-        <div className="w-[75%] mx-auto flex flex-col flex-1 gap-5">
+        <div className="w-[85%] mx-auto flex flex-col flex-1 gap-5">
           <ChatMessages
             messages={messages}
             chatEndRef={chatEndRef}
