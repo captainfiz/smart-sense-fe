@@ -52,7 +52,7 @@ function App() {
     fullResponseRef.current = { value: "", type: "" };
 
     try {
-      const res = await fetch("http://localhost:8001/protected/chat", {
+      const res = await fetch("http://localhost:8000/protected/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
