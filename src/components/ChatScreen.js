@@ -38,6 +38,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const { checkpoint: paramCheckpoint } = useParams();
   const [checkpointId, setCheckpointId] = useState("");
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     if (!paramCheckpoint || paramCheckpoint.length === 0) {
@@ -331,7 +332,7 @@ export default function ChatScreen() {
 
   const historyHandler = async (checkpointId) => {
     try {
-      setIsLoading(true);
+      setHistoryLoading(true);
       const result = messageData.filter((val) => val.thread_id == checkpointId);
       if (result.length > 0) {
         setMessages(result);
@@ -349,7 +350,7 @@ export default function ChatScreen() {
     } catch (err) {
       console.error("Error fetching chat history:", err);
     } finally {
-      setIsLoading(false);
+      setHistoryLoading(false);
     }
   };
 
@@ -477,7 +478,7 @@ export default function ChatScreen() {
           </span>
         </div>
         <div className="w-[85%] mx-auto flex flex-col flex-1 gap-5 ">
-          {isLoading ? (
+          {historyLoading ? (
             <div className="flex items-center justify-center py-8 h-[66vh] max-h-[66vh]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               <span className="ml-3 text-gray-600">Loading...</span>
