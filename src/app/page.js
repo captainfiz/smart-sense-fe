@@ -47,7 +47,7 @@ export default function Home() {
                     name="username"
                     type="text"
                     placeholder="e.g., alex@company.com or alex_id"
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+                    className="w-full border text-zinc-800 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
                   />
                   <ErrorMessage
                     name="username"
@@ -61,7 +61,7 @@ export default function Home() {
                     name="password"
                     type="password"
                     placeholder="Password"
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+                    className="w-full border text-zinc-800 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
                   />
                   <ErrorMessage
                     name="password"
